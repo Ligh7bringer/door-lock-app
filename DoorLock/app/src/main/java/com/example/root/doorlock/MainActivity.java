@@ -14,16 +14,29 @@ import android.nfc.tech.NfcF;
 import android.nfc.tech.NfcV;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
+import static android.provider.Telephony.Carriers.PASSWORD;
 
 public class MainActivity extends AppCompatActivity {
     // list of NFC technologies detected:
@@ -42,19 +55,27 @@ public class MainActivity extends AppCompatActivity {
     // should be a singleton
     OkHttpClient client;
     TextView tv;
-
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         tv = findViewById(R.id.text);
-
         client = new OkHttpClient();
+        
+        JSONObject postBody = new JSONObject();
+        try {
+            postBody.put("id",11111111);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         Request request = new Request.Builder()
-                .url("http://publicobject.com/helloworld.txt")
-                .build();
+            .url("http://192.168.0.11/test.php")
+            .post(RequestBody.create(JSON, postBody.toString()))
+            .build();
 
         // Get a handler that can be used to post to the main thread
         client.newCall(request).enqueue(new Callback() {
