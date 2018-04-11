@@ -16,7 +16,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.JsonWriter;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,56 +55,68 @@ public class MainActivity extends AppCompatActivity {
             }
     };
 
-    // should be a singleton
     OkHttpClient client;
     TextView tv;
-    public static final MediaType JSON
-            = MediaType.parse("application/json; charset=utf-8");
+    TextView result;
+    Button auth;
+    Button unauth;
+
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public String UID = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        result = findViewById(R.id.tv_result);
         tv = findViewById(R.id.text);
-        client = new OkHttpClient();
-        
-        JSONObject postBody = new JSONObject();
-        try {
-            postBody.put("id",11111111);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        tv.setText("Scan a tag to start....");
 
-        Request request = new Request.Builder()
-            .url("http://192.168.0.11/test.php")
-            .post(RequestBody.create(JSON, postBody.toString()))
-            .build();
+        auth = findViewById(R.id.btn_auth);
+        unauth = findViewById(R.id.btn_unauth);
 
-        // Get a handler that can be used to post to the main thread
-        client.newCall(request).enqueue(new Callback() {
+        //send a request to the server to insert the id of the scanned tag into the database when the authorise button is clicked
+        auth.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected response" + response);
-                }
-
-                // Read data on the worker thread
-                final String responseData = response.body().string();
-
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        tv.setText(responseData);
+            public void onClick(View v) {
+                if(UID.isEmpty()) {
+                    Toast.makeText(getBaseContext(), "Scan a tag first!", Toast.LENGTH_LONG).show();
+                } else {
+                    JSONObject postBody = new JSONObject();
+                    try {
+                        postBody.put("action", "authorise");
+                        postBody.put("id", UID);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                });
+
+                    sendRequest(postBody);
+                }
             }
         });
 
+        //send a request the server to delete the id of the tag from the database
+        unauth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(UID.isEmpty()) {
+                    Toast.makeText(getBaseContext(), "Scan a tag first!", Toast.LENGTH_LONG).show();
+                } else {
+                    JSONObject postBody = new JSONObject();
+                    try {
+                        postBody.put("action", "unauthorise");
+                        postBody.put("id", UID);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    sendRequest(postBody);
+                }
+            }
+        });
+
+        client = new OkHttpClient();
     }
 
     @Override
@@ -130,7 +145,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent.getAction().equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
-            tv.setText("NFC Tag\n" + ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)) + "\n");
+            //get id of tag
+            UID = ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
+            //display it
+            tv.setText("NFC Tag UID: " + UID + "\n");
+            //set up a json object for a request to the server
+            JSONObject postBody = new JSONObject();
+            try {
+                //request to check if the id is in the database
+                postBody.put("action", "checkdb");
+                postBody.put("id", UID);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //send the request
+            sendRequest(postBody);
         }
     }
 
@@ -149,6 +179,39 @@ public class MainActivity extends AppCompatActivity {
             out += hex[i];
         }
         return out;
+    }
+
+    //sends a request to the server with the given json object
+    private void sendRequest(JSONObject jobj) {
+        Request request = new Request.Builder()
+                .url("http://192.168.0.11/test.php")
+                .post(RequestBody.create(JSON, jobj.toString()))
+                .build();
+
+        // Get a handler that can be used to post to the main thread
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected response" + response);
+                }
+
+                // Read data on the worker thread
+                final String responseData = response.body().string();
+
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        result.setText(responseData);
+                    }
+                });
+            }
+        });
     }
 
 }
