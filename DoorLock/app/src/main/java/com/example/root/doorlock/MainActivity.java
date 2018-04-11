@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             //get id of tag
             UID = ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
             //display it
-            tv.setText("NFC Tag UID: " + UID + "\n");
+            tv.setText("Tag UID: " + UID + "\n");
             //set up a json object for a request to the server
             JSONObject postBody = new JSONObject();
             try {
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     //sends a request to the server with the given json object
     private void sendRequest(JSONObject jobj) {
         Request request = new Request.Builder()
-                .url("http://192.168.0.11/test.php")
+                .url("http://192.168.0.11/request_handler.php")
                 .post(RequestBody.create(JSON, jobj.toString()))
                 .build();
 
