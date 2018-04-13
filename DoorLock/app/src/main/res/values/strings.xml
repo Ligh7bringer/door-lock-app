@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DoorLock</string>
+    <string name="channel">notification</string>
+    <string name="channelDescription">Default notification channel</string>
 </resources>

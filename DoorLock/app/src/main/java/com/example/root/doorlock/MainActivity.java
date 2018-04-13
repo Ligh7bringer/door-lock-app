@@ -1,6 +1,10 @@
 package com.example.root.doorlock;
 
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
@@ -12,34 +16,26 @@ import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcB;
 import android.nfc.tech.NfcF;
 import android.nfc.tech.NfcV;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.JsonWriter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
-import static android.provider.Telephony.Carriers.PASSWORD;
 
 public class MainActivity extends AppCompatActivity {
     // list of NFC technologies detected:
@@ -63,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public String UID = "";
+    private static final String SERVER = "http://192.168.0.11/request_handler.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
         auth = findViewById(R.id.btn_auth);
         unauth = findViewById(R.id.btn_unauth);
+
+        startService(new Intent(MainActivity.this, ServiceStatusUpdate.class));
 
         //send a request to the server to insert the id of the scanned tag into the database when the authorise button is clicked
         auth.setOnClickListener(new View.OnClickListener() {
@@ -184,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
     //sends a request to the server with the given json object
     private void sendRequest(JSONObject jobj) {
         Request request = new Request.Builder()
-                .url("http://192.168.0.11/request_handler.php")
+                .url(SERVER)
                 .post(RequestBody.create(JSON, jobj.toString()))
                 .build();
 
