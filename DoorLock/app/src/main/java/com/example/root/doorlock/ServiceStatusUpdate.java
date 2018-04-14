@@ -2,7 +2,9 @@ package com.example.root.doorlock;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -113,6 +115,9 @@ public class ServiceStatusUpdate extends Service {
 
     private void displayNotification(int id, String title, String text) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        Intent intent = new Intent(this, ImageDisplay.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent notificationIntent= PendingIntent.getActivity(this, id, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channelID)
                 .setSmallIcon(R.drawable.icon)
@@ -120,6 +125,8 @@ public class ServiceStatusUpdate extends Service {
                 .setContentText(text)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(text))
+                .setContentIntent(notificationIntent)
+                .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         notificationManager.notify(id, mBuilder.build());

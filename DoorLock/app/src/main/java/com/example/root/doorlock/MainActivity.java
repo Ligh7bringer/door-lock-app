@@ -56,10 +56,11 @@ public class MainActivity extends AppCompatActivity {
     TextView result;
     Button auth;
     Button unauth;
+    Button img;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public String UID = "";
-    private static final String SERVER = "http://192.168.0.11/request_handler.php";
+    public static String UID = "";
+    public static final String SERVER = "http://192.168.0.11/request_handler.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         tv = findViewById(R.id.text);
         tv.setText("Scan a tag to start....");
 
+        img = findViewById(R.id.btn_images);
         auth = findViewById(R.id.btn_auth);
         unauth = findViewById(R.id.btn_unauth);
 
@@ -112,6 +114,14 @@ public class MainActivity extends AppCompatActivity {
 
                     sendRequest(postBody);
                 }
+            }
+        });
+
+        img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ImageDisplay.class);
+                startActivity(intent);
             }
         });
 
@@ -181,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //sends a request to the server with the given json object
-    private void sendRequest(JSONObject jobj) {
+    public void sendRequest(JSONObject jobj) {
         Request request = new Request.Builder()
                 .url(SERVER)
                 .post(RequestBody.create(JSON, jobj.toString()))

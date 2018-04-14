@@ -10,11 +10,11 @@
         android:id="@+id/text"
         android:layout_width="225dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="23dp"
+        android:layout_marginBottom="310dp"
         android:layout_marginTop="36dp"
         android:textAlignment="center"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_result"
+        app:layout_constraintBottom_toTopOf="@+id/btn_images"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -51,5 +51,16 @@
         app:layout_constraintBottom_toTopOf="@+id/btn_auth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text" />
+
+    <Button
+        android:id="@+id/btn_images"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:layout_marginStart="15dp"
+        android:text="Images"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/btn_unauth"
         app:layout_constraintTop_toBottomOf="@+id/text" />
 </android.support.constraint.ConstraintLayout>
